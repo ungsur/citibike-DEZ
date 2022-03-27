@@ -1,8 +1,0 @@
-[2022-03-27 04:08:24,678] {logging_mixin.py:109} INFO - Running <TaskInstance: data_ingestion_gcs_dag.format_to_parquet_task manual__2022-03-27T04:03:48.472709+00:00 [failed]> on host f98077e2e921
-[2022-03-27 04:08:25,062] {taskinstance.py:1426} INFO - Exporting the following env vars:
-AIRFLOW_CTX_DAG_OWNER=***
-AIRFLOW_CTX_DAG_ID=data_ingestion_gcs_dag
-AIRFLOW_CTX_TASK_ID=format_to_parquet_task
-AIRFLOW_CTX_EXECUTION_DATE=2022-03-27T04:03:48.472709+00:00
-AIRFLOW_CTX_DAG_RUN_ID=manual__2022-03-27T04:03:48.472709+00:00
-[2022-03-27 04:08:30,094] {taskinstance.py:1408} ERROR - Received SIGTERM. Terminating subprocesses.
