@@ -1,5 +1,7 @@
 __pycache__
 .terraform
-.log
+airflow/logs/**/*.log
 
 **/*.log
+*/*.log
+airflow/logs/scheduler/latest
