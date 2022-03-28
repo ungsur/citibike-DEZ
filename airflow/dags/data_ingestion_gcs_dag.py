@@ -10,6 +10,9 @@ from google.cloud import storage
 from airflow.providers.google.cloud.operators.bigquery import (
     BigQueryCreateExternalTableOperator,
 )
+from airflow.providers.google.cloud.transfers.gcs_to_gcs import GCSToGCSOperator
+
+
 import pyarrow.csv as pv
 import pyarrow.parquet as pq
 import zipfile
@@ -80,8 +83,8 @@ def upload_to_gcs(bucket, object_name, local_file):
 default_args = {
     "owner": "airflow",
     "depends_on_past": False,
-    "start_date": datetime(2019, 1, 1),
-    "end_date": datetime(2020, 1, 1),
+    "start_date": datetime(2017, 1, 1),
+    "end_date": datetime(2022, 1, 1),
     "retries": 1,
 }
 
