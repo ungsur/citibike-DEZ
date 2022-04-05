@@ -83,7 +83,7 @@ def upload_to_gcs(bucket, object_name, local_file):
 default_args = {
     "owner": "airflow",
     "depends_on_past": False,
-    "start_date": datetime(2017, 1, 1),
+    "start_date": datetime(2019, 1, 1),
     "end_date": datetime(2022, 1, 1),
     "retries": 1,
 }
@@ -135,7 +135,7 @@ with DAG(
             },
             "externalDataConfiguration": {
                 "sourceFormat": "PARQUET",
-                "sourceUris": [f"gs://{BUCKET}/raw/{OUTPUT_PQFILE_FILENAME}"],
+                "sourceUris": [f"gs://{BUCKET}/raw/"],
             },
         },
     )

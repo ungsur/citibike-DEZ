@@ -1,0 +1,12 @@
+version: '3'
+services:
+  citibikedbt:
+    build:
+      context: .
+      target: dbt-bigquery
+    image: dbt/bigquery
+    volumes:
+      - .:/usr/app
+      - ~/.dbt/:/root/.dbt/
+      - ~/.google/credentials/citibike-31437-bee153d922d0.json:/.google/credentials/citibike-31437-bee153d922d0.json
+    network_mode: host
