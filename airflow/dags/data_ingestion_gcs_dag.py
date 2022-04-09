@@ -10,7 +10,6 @@ from google.cloud import storage
 from airflow.providers.google.cloud.operators.bigquery import (
     BigQueryCreateExternalTableOperator,
 )
-from airflow.providers.google.cloud.transfers.gcs_to_gcs import GCSToGCSOperator
 
 
 import pyarrow.csv as pv
@@ -39,6 +38,7 @@ OUTPUT_ZIPFILE_TEMPLATE = (
 )
 OUTPUT_CSVFILE_TEMPLATE = OUTPUT_ZIPFILE_TEMPLATE.replace(".zip", "")
 
+OUTPUT_YEAR_TEMPLATE = "{{ execution_date.strftime('%Y') }}"
 
 OUTPUT_PQFILE_TEMPLATE = OUTPUT_ZIPFILE_TEMPLATE.replace(".csv.zip", ".parquet")
 
@@ -53,7 +53,6 @@ def format_to_parquet(src_file, csv_file, pq_file):
     pq.write_table(table, pq_file)
 
 
-# NOTE: takes 20 mins, at an upload speed of 800kbps. Faster if your internet has a better upload speed
 def upload_to_gcs(bucket, object_name, local_file):
     """
     Ref: https://cloud.google.com/storage/docs/uploading-objects#storage-upload-object-python
@@ -83,13 +82,12 @@ default_args = {
     "retries": 1,
 }
 
-# NOTE: DAG declaration - using a Context Manager (an implicit way)
 with DAG(
     dag_id="data_ingestion_gcs_dag",
     default_args=default_args,
     catchup=True,
     schedule_interval="0 6 2 * *",
-    max_active_runs=2,
+    max_active_runs=1,
     tags=["citibike-31437"],
 ) as dag:
 
@@ -114,7 +112,7 @@ with DAG(
         python_callable=upload_to_gcs,
         op_kwargs={
             "bucket": BUCKET,
-            "object_name": f"raw/{OUTPUT_ZIPFILE_TEMPLATE}",
+            "object_name": f"raw/{OUTPUT_YEAR_TEMPLATE}/{OUTPUT_ZIPFILE_TEMPLATE}",
             "local_file": f"{AIRFLOW_HOME}/{OUTPUT_ZIPFILE_TEMPLATE}",
         },
     )
@@ -124,7 +122,7 @@ with DAG(
         python_callable=upload_to_gcs,
         op_kwargs={
             "bucket": BUCKET,
-            "object_name": f"pq/{OUTPUT_PQFILE_TEMPLATE}",
+            "object_name": f"pq/{OUTPUT_YEAR_TEMPLATE}/{OUTPUT_PQFILE_TEMPLATE}",
             "local_file": f"{AIRFLOW_HOME}/{OUTPUT_PQFILE_TEMPLATE}",
         },
     )

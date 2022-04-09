@@ -9,8 +9,6 @@ from airflow.providers.google.cloud.operators.bigquery import (
     BigQueryCreateExternalTableOperator,
     BigQueryInsertJobOperator,
 )
-from airflow.providers.google.cloud.transfers.gcs_to_gcs import GCSToGCSOperator
-
 
 PROJECT_ID = os.environ.get("GCP_PROJECT_ID")
 BUCKET = os.environ.get("GCP_GCS_BUCKET")
@@ -26,8 +24,7 @@ OUTPUT_PQ_FILENAME = "{{ execution_date.strftime('%Y%m') }}-citibike-tripdata.pa
 default_args = {
     "owner": "airflow",
     "depends_on_past": False,
-    "start_date": datetime(2019, 1, 1),
-    "end_date": datetime(2021, 1, 1),
+    "start_date": days_ago(1),
     "retries": 1,
 }
 
@@ -47,28 +44,20 @@ with DAG(
                 "tableReference": {
                     "projectId": PROJECT_ID,
                     "datasetId": BIGQUERY_DATASET,
-                    "tableId": "external_table",
+                    "tableId": "citibike_external_table",
                 },
                 "externalDataConfiguration": {
+                    "autodetect": "True",
                     "sourceFormat": "PARQUET",
-                    "sourceUris": [f"gs://{BUCKET}/raw/"],
+                    "sourceUris": [
+                        f"gs://{BUCKET}/pq/2017/*",
+                        f"gs://{BUCKET}/pq/2018/*",
+                        f"gs://{BUCKET}/pq/2019/*",
+                        f"gs://{BUCKET}/pq/2020/*",
+                    ],
                 },
             },
         ),
     )
-    gcs_to_bq_ext_task = BigQueryCreateExternalTableOperator(
-        task_id="gcs_to_bq_ext_task",
-        table_resource={
-            "tableReference": {
-                "projectId": PROJECT_ID,
-                "datasetId": BIGQUERY_DATASET,
-                "tableId": "citibike_external_table",
-            },
-            "externalDataConfiguration": {
-                "autodetect": "True",
-                "sourceFormat": "PARQUET",
-                "sourceUris": [f"gs://{BUCKET}/raw/*.parquet"],
-            },
-        },
-    )
-gcs_to_bq_ext_task >> bigquery_external_table_task
+
+bigquery_external_table_task
