@@ -1,6 +1,4 @@
 import os
-import logging
-from datetime import datetime
 
 from airflow import DAG
 from airflow.utils.dates import days_ago
@@ -18,6 +16,9 @@ AIRFLOW_HOME = os.environ.get("AIRFLOW_HOME", "/opt/airflow/")
 path_to_local_home = os.environ.get("AIRFLOW_HOME", "/opt/airflow/")
 
 BIGQUERY_DATASET = os.environ.get("BIGQUERY_DATASET", "citibike_data_all")
+DATASET = "citibike"
+COL = "starttime"
+CLUSTERCOL = "bikeid"
 
 OUTPUT_PQ_FILENAME = "{{ execution_date.strftime('%Y%m') }}-citibike-tripdata.parquet"
 
@@ -37,27 +38,40 @@ with DAG(
     max_active_runs=3,
     tags=["citibike-31437"],
 ) as dag:
-    bigquery_external_table_task = (
-        BigQueryCreateExternalTableOperator(
-            task_id="bigquery_external_table_task",
-            table_resource={
-                "tableReference": {
-                    "projectId": PROJECT_ID,
-                    "datasetId": BIGQUERY_DATASET,
-                    "tableId": "citibike_external_table",
-                },
-                "externalDataConfiguration": {
-                    "autodetect": "True",
-                    "sourceFormat": "PARQUET",
-                    "sourceUris": [
-                        f"gs://{BUCKET}/pq/2017/*",
-                        f"gs://{BUCKET}/pq/2018/*",
-                        f"gs://{BUCKET}/pq/2019/*",
-                        f"gs://{BUCKET}/pq/2020/*",
-                    ],
-                },
+    bigquery_external_table_task = BigQueryCreateExternalTableOperator(
+        task_id="bigquery_external_table_task",
+        table_resource={
+            "tableReference": {
+                "projectId": PROJECT_ID,
+                "datasetId": BIGQUERY_DATASET,
+                "tableId": "citibike_external_table",
             },
-        ),
+            "externalDataConfiguration": {
+                "autodetect": "True",
+                "sourceFormat": "PARQUET",
+                "sourceUris": [
+                    f"gs://{BUCKET}/pq/2017/*",
+                    f"gs://{BUCKET}/pq/2018/*",
+                    f"gs://{BUCKET}/pq/2019/*",
+                    f"gs://{BUCKET}/pq/2020/*",
+                ],
+            },
+        },
     )
 
-bigquery_external_table_task
+    CREATE_BQ_TBL_QUERY = f"CREATE OR REPLACE TABLE {BIGQUERY_DATASET}.{DATASET}_table_partitioned \
+        PARTITION BY DATE({COL}) \
+        CLUSTER BY {CLUSTERCOL} AS \
+        SELECT * FROM {BIGQUERY_DATASET}.{DATASET}_external_table;"
+
+    bq_create_partitioned_table_job = BigQueryInsertJobOperator(
+        task_id=f"bq_create_{DATASET}_partitioned_table_task",
+        configuration={
+            "query": {
+                "query": CREATE_BQ_TBL_QUERY,
+                "useLegacySql": False,
+            }
+        },
+    )
+
+bigquery_external_table_task >> bq_create_partitioned_table_job
