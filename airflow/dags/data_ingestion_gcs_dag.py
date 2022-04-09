@@ -30,22 +30,17 @@ csvdataset_file = dataset_file.replace(".zip", ".csv")
 parquet_file = dataset_file.replace(".zip", ".parquet")
 BIGQUERY_DATASET = os.environ.get("BIGQUERY_DATASET", "citibike_data_all")
 
-URL_PREFIX = "https://s3.amazonaws.com/tripdata"
+URL_PREFIX = "https://s3.amazonaws.com/tripdata/"
 URL_TEMPLATE = (
-    URL_PREFIX + "/{{ execution_date.strftime('%Y%m') }}-citibike-tripdata.csv.zip"
+    URL_PREFIX + "{{ execution_date.strftime('%Y%m') }}-citibike-tripdata.csv.zip"
 )
 OUTPUT_ZIPFILE_TEMPLATE = (
-    AIRFLOW_HOME + "/{{ execution_date.strftime('%Y%m') }}-citibike-tripdata.csv.zip"
+    "{{ execution_date.strftime('%Y%m') }}-citibike-tripdata.csv.zip"
 )
 OUTPUT_CSVFILE_TEMPLATE = OUTPUT_ZIPFILE_TEMPLATE.replace(".zip", "")
 
 
-OUTPUT_PQFILE_TEMPLATE = (
-    AIRFLOW_HOME + "/{{ execution_date.strftime('%Y%m') }}-citibike-tripdata.parquet"
-)
-OUTPUT_PQFILE_FILENAME = (
-    "{{ execution_date.strftime('%Y%m') }}-citibike-tripdata.parquet"
-)
+OUTPUT_PQFILE_TEMPLATE = OUTPUT_ZIPFILE_TEMPLATE.replace(".csv.zip", ".parquet")
 
 
 def format_to_parquet(src_file, csv_file, pq_file):
@@ -83,8 +78,8 @@ def upload_to_gcs(bucket, object_name, local_file):
 default_args = {
     "owner": "airflow",
     "depends_on_past": False,
-    "start_date": datetime(2019, 1, 1),
-    "end_date": datetime(2022, 1, 1),
+    "start_date": datetime(2017, 1, 1),
+    "end_date": datetime(2021, 1, 1),
     "retries": 1,
 }
 
@@ -94,54 +89,49 @@ with DAG(
     default_args=default_args,
     catchup=True,
     schedule_interval="0 6 2 * *",
-    max_active_runs=3,
+    max_active_runs=2,
     tags=["citibike-31437"],
 ) as dag:
 
     download_dataset_task = BashOperator(
         task_id="download_dataset_task",
         # bash_command='echo "{{ ds }}" "{{ execution_date.strftime(\'%Y%m\') }}"',
-        bash_command=f"curl -sSL {URL_TEMPLATE} > {OUTPUT_ZIPFILE_TEMPLATE}",
+        bash_command=f"curl -sSL {URL_TEMPLATE} > {AIRFLOW_HOME}/{OUTPUT_ZIPFILE_TEMPLATE}",
     )
 
     format_to_parquet_task = PythonOperator(
         task_id="format_to_parquet_task",
         python_callable=format_to_parquet,
         op_kwargs={
-            "src_file": OUTPUT_ZIPFILE_TEMPLATE,
-            "csv_file": OUTPUT_CSVFILE_TEMPLATE,
-            "pq_file": OUTPUT_PQFILE_TEMPLATE,
+            "src_file": f"{AIRFLOW_HOME}/{OUTPUT_ZIPFILE_TEMPLATE}",
+            "csv_file": f"{AIRFLOW_HOME}/{OUTPUT_CSVFILE_TEMPLATE}",
+            "pq_file": f"{AIRFLOW_HOME}/{OUTPUT_PQFILE_TEMPLATE}",
         },
     )
 
-    local_to_gcs_task = PythonOperator(
-        task_id="local_to_gcs_task",
+    local_zip_to_gcs_task = PythonOperator(
+        task_id="local_zip_to_gcs_task",
         python_callable=upload_to_gcs,
         op_kwargs={
             "bucket": BUCKET,
-            "object_name": f"raw/{OUTPUT_PQFILE_FILENAME}",
-            "local_file": f"{OUTPUT_PQFILE_TEMPLATE}",
+            "object_name": f"raw/{OUTPUT_ZIPFILE_TEMPLATE}",
+            "local_file": f"{AIRFLOW_HOME}/{OUTPUT_ZIPFILE_TEMPLATE}",
         },
     )
 
-    bigquery_external_table_task = BigQueryCreateExternalTableOperator(
-        task_id="bigquery_external_table_task",
-        table_resource={
-            "tableReference": {
-                "projectId": PROJECT_ID,
-                "datasetId": BIGQUERY_DATASET,
-                "tableId": "external_table",
-            },
-            "externalDataConfiguration": {
-                "sourceFormat": "PARQUET",
-                "sourceUris": [f"gs://{BUCKET}/raw/"],
-            },
+    local_pq_to_gcs_task = PythonOperator(
+        task_id="local_pq_to_gcs_task",
+        python_callable=upload_to_gcs,
+        op_kwargs={
+            "bucket": BUCKET,
+            "object_name": f"pq/{OUTPUT_PQFILE_TEMPLATE}",
+            "local_file": f"{AIRFLOW_HOME}/{OUTPUT_PQFILE_TEMPLATE}",
         },
     )
 
     (
         download_dataset_task
+        >> local_zip_to_gcs_task
         >> format_to_parquet_task
-        >> local_to_gcs_task
-        >> bigquery_external_table_task
+        >> local_pq_to_gcs_task
     )

@@ -40,7 +40,22 @@ with DAG(
     max_active_runs=3,
     tags=["citibike-31437"],
 ) as dag:
-
+    bigquery_external_table_task = (
+        BigQueryCreateExternalTableOperator(
+            task_id="bigquery_external_table_task",
+            table_resource={
+                "tableReference": {
+                    "projectId": PROJECT_ID,
+                    "datasetId": BIGQUERY_DATASET,
+                    "tableId": "external_table",
+                },
+                "externalDataConfiguration": {
+                    "sourceFormat": "PARQUET",
+                    "sourceUris": [f"gs://{BUCKET}/raw/"],
+                },
+            },
+        ),
+    )
     gcs_to_bq_ext_task = BigQueryCreateExternalTableOperator(
         task_id="gcs_to_bq_ext_task",
         table_resource={
@@ -56,4 +71,4 @@ with DAG(
             },
         },
     )
-gcs_to_bq_ext_task
+gcs_to_bq_ext_task >> bigquery_external_table_task
