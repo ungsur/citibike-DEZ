@@ -2,6 +2,7 @@
 
 select 
     -- identifiers
+    {{ dbt_utils.surrogate_key(['bikeid','starttime'])}} as tripid,
     cast(bikeid as integer) as bikeid,
     cast(start_station_id as integer) as start_station_id,
     cast(end_station_id as integer) as end_station_id,
@@ -23,7 +24,13 @@ select
     {{ get_gender_type_description('gender') }} as gender_type_desc
 
 from {{ source('staging', 'citibike_table_partitioned') }}
-limit 100
+
+-- dbt build --m <model.sql> --var 'is_test_run: false'
+{% if var('is_test_run', default=true) %}
+
+  limit 100
+
+{% endif %}
 
 
  

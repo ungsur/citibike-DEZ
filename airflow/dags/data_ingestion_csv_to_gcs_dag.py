@@ -2,10 +2,10 @@ import os
 import logging
 
 from airflow import DAG
-from airflow.utils.dates import days_ago
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
 from google.cloud import storage
+
 import pyarrow.csv as pv
 import pyarrow.parquet as pq
 import zipfile
@@ -25,17 +25,14 @@ OUTPUT_ZIPFILE_TEMPLATE = (
 )
 OUTPUT_CSVFILE_TEMPLATE = OUTPUT_ZIPFILE_TEMPLATE.replace(".zip", "")
 OUTPUT_YEAR_TEMPLATE = "{{ execution_date.strftime('%Y') }}"
-OUTPUT_PQFILE_TEMPLATE = OUTPUT_ZIPFILE_TEMPLATE.replace(".csv.zip", ".parquet")
 
 
-def format_to_parquet(src_file, csv_file, pq_file):
+def format_to_csv(src_file, csv_file):
     if not src_file.endswith(".zip"):
         logging.error("Can only accept source files in ZIP format, for the moment")
         return
     with zipfile.ZipFile(src_file) as z:
         z.extractall()
-    table = pv.read_csv(csv_file)
-    pq.write_table(table, pq_file)
 
 
 def upload_to_gcs(bucket, object_name, local_file):
@@ -68,37 +65,25 @@ default_args = {
 }
 
 with DAG(
-    dag_id="data_ingestion_gcs_dag",
+    dag_id="data_zip_to_gcs_dag",
     default_args=default_args,
     catchup=True,
     schedule_interval="0 6 2 * *",
     max_active_runs=1,
     tags=["citibike-31437"],
 ) as dag:
-
     download_dataset_task = BashOperator(
         task_id="download_dataset_task",
         # bash_command='echo "{{ ds }}" "{{ execution_date.strftime(\'%Y%m\') }}"',
         bash_command=f"curl -sSL {URL_TEMPLATE} > {AIRFLOW_HOME}/{OUTPUT_ZIPFILE_TEMPLATE}",
     )
 
-    format_to_parquet_task = PythonOperator(
-        task_id="format_to_parquet_task",
-        python_callable=format_to_parquet,
+    unzip_to_csv_task = PythonOperator(
+        task_id="format_to_csv_task",
+        python_callable=format_to_csv,
         op_kwargs={
             "src_file": f"{AIRFLOW_HOME}/{OUTPUT_ZIPFILE_TEMPLATE}",
             "csv_file": f"{AIRFLOW_HOME}/{OUTPUT_CSVFILE_TEMPLATE}",
-            "pq_file": f"{AIRFLOW_HOME}/{OUTPUT_PQFILE_TEMPLATE}",
-        },
-    )
-
-    local_zip_to_gcs_task = PythonOperator(
-        task_id="local_zip_to_gcs_task",
-        python_callable=upload_to_gcs,
-        op_kwargs={
-            "bucket": BUCKET,
-            "object_name": f"raw/{OUTPUT_YEAR_TEMPLATE}/{OUTPUT_ZIPFILE_TEMPLATE}",
-            "local_file": f"{AIRFLOW_HOME}/{OUTPUT_ZIPFILE_TEMPLATE}",
         },
     )
 
@@ -112,20 +97,4 @@ with DAG(
         },
     )
 
-    local_pq_to_gcs_task = PythonOperator(
-        task_id="local_pq_to_gcs_task",
-        python_callable=upload_to_gcs,
-        op_kwargs={
-            "bucket": BUCKET,
-            "object_name": f"pq/{OUTPUT_YEAR_TEMPLATE}/{OUTPUT_PQFILE_TEMPLATE}",
-            "local_file": f"{AIRFLOW_HOME}/{OUTPUT_PQFILE_TEMPLATE}",
-        },
-    )
-
-    (
-        download_dataset_task
-        >> local_zip_to_gcs_task
-        >> format_to_parquet_task
-        >> local_pq_to_gcs_task
-        >> local_csv_to_gcs_task
-    )
+    (download_dataset_task >> unzip_to_csv_task >> local_csv_to_gcs_task)

@@ -1,0 +1,10 @@
+version: 2
+
+models:
+  - name: fact_trips
+    description: >
+      just a copy of the trips table
+
+  - name: dm_monthly_trips_count.sql
+    description: >
+      table of citibike trips per month

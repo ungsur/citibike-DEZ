@@ -1,8 +1,6 @@
 import os
-
 from airflow import DAG
 from airflow.utils.dates import days_ago
-
 from airflow.providers.google.cloud.operators.bigquery import (
     BigQueryCreateExternalTableOperator,
     BigQueryInsertJobOperator,
@@ -11,14 +9,10 @@ from airflow.providers.google.cloud.operators.bigquery import (
 PROJECT_ID = os.environ.get("GCP_PROJECT_ID")
 BUCKET = os.environ.get("GCP_GCS_BUCKET")
 AIRFLOW_HOME = os.environ.get("AIRFLOW_HOME", "/opt/airflow/")
-
-
-path_to_local_home = os.environ.get("AIRFLOW_HOME", "/opt/airflow/")
-
 BIGQUERY_DATASET = os.environ.get("BIGQUERY_DATASET", "citibike_data_all")
 DATASET = "citibike"
-COL = "starttime"
-CLUSTERCOL = "bikeid"
+PARTITION_COL = "starttime"
+CLUSTER_COL = "bikeid"
 
 OUTPUT_PQ_FILENAME = "{{ execution_date.strftime('%Y%m') }}-citibike-tripdata.parquet"
 
@@ -29,7 +23,6 @@ default_args = {
     "retries": 1,
 }
 
-# NOTE: DAG declaration - using a Context Manager (an implicit way)
 with DAG(
     dag_id="gcs_to_bq_ext_task",
     default_args=default_args,
@@ -60,8 +53,8 @@ with DAG(
     )
 
     CREATE_BQ_TBL_QUERY = f"CREATE OR REPLACE TABLE {BIGQUERY_DATASET}.{DATASET}_table_partitioned \
-        PARTITION BY DATE({COL}) \
-        CLUSTER BY {CLUSTERCOL} AS \
+        PARTITION BY DATE({PARTITION_COL}) \
+        CLUSTER BY {CLUSTER_COL} AS \
         SELECT * FROM {BIGQUERY_DATASET}.{DATASET}_external_table;"
 
     bq_create_partitioned_table_job = BigQueryInsertJobOperator(
