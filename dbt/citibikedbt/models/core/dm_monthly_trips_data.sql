@@ -6,9 +6,9 @@ with trips_data as (
 )
 
 select 
-count(tripid) as tripcount,
 date_trunc(starttime, month) as month,
-
+avg(tripduration) as trip_duration_avg,
+count(tripid) as total_monthly_trips,
 
 from trips_data
 group by month

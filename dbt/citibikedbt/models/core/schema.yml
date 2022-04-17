@@ -5,6 +5,14 @@ models:
     description: >
       just a copy of the trips table
 
-  - name: dm_monthly_trips_count.sql
+  - name: dm_monthly_trips_data.sql
     description: >
       table of citibike trips per month
+    
+  - name: dm_daily_trips_data.sql
+    description: >
+      table of citibike trips by day of week
+  
+  - name: dm_start_stations.sql
+    description: >
+      table of citibike start_stations and counts of use
