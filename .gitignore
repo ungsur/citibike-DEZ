@@ -7,3 +7,5 @@ airflow/logs/**/*.log
 airflow/logs/scheduler/latest
 .gitkeep
 *.parquet
+spark/data
+
