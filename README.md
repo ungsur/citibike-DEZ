@@ -18,6 +18,9 @@ A graph of trip count over per month
 A plot of Gender(Male/Female/Unknown) for all trips in the dataset
 A Bubblemap geo chart of Station locations with the number of trips taken from each citibike location for a small area of midtown Manhattan.
 
+
+![alt text](https://github.com/ungsur/citibike-DEZ/blob/main/CitibikeDataset.png?raw=true)
+
 All charts used the tables created by DBT in Big query for the data sources.
 
 The Geo chart was created with the help of this tutorial:
