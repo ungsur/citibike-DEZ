@@ -70,10 +70,10 @@ For your platform, install Docker Desktop and Docker Compose from the [Docker Ge
 
 Follow the README instructions in the following order:
 
-1. Terraform
+1. [Terraform README](https://github.com/ungsur/citibike-DEZ/blob/main/terraform/README.md)
 
-2. Airflow
+2. [Airflow README](https://github.com/ungsur/citibike-DEZ/blob/main/airflow/README.md)
 
-3. dbt
+3. [dbt README](https://github.com/ungsur/citibike-DEZ/blob/main/dbt/citibikedbt/README.md)
 
-4. The dashboard in Google Data Studio was manually constructed and reports can be found [here](https://github.com/ungsur/citibike-DEZ/blob/main/CitibikeDataset.pdf)
+4. The dashboard in Google Data Studio was manually constructed and the report can be found [here](https://github.com/ungsur/citibike-DEZ/blob/main/Citibike_Dashboard.pdf)
