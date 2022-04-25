@@ -3,10 +3,13 @@
 Docker compose in this directory creates a local instance of airflow.
 
 Populate the following parameters in the .env file located in the airflow directory:
+
+```
 COMPOSE_PROJECT_NAME=<A Project Name>
 GOOGLE_APPLICATION_CREDENTIALS=<Google credentials json file location>
 GCP_PROJECT_ID=<Google Project ID>
 GCP_GCS_BUCKET=<Location of GCS Bucket to store files>
+```
 
 Run the following commands from the airflow directory to start airflow:
 
