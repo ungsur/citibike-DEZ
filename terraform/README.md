@@ -5,7 +5,8 @@ Data Lake on google cloud storage: citibike_data_all
 Big Query Dataset: citibike_data_all
 
 Populate the following parameters in the variables.tf file located in the terraform directory:
-'''
+
+```
 variable "project" {
   description = <project description>
 }
@@ -21,7 +22,8 @@ variable "BQ_DATASET" {
   type = string
   default = <Dataset name>
 }
-'''
+```
+
 Run the following commands from the terraform directory:
 
 # Refresh service-account's auth-token for this session
@@ -29,19 +31,14 @@ Run the following commands from the terraform directory:
 gcloud auth application-default login
 
 # Initialize state file (.tfstate)
-
+```
 terraform init
-
-# Check changes to new infra plan
-
-'''
 terraform plan -var="project=<your-gcp-project-id>"
-'''
-
-# Create new infra
-
 terraform apply -var="project=<your-gcp-project-id>"
+```
 
 # Delete infra after your work, to avoid costs on any running services
 
+```
 terraform destroy
+```
