@@ -1,15 +1,29 @@
-Welcome to your new dbt project!
+# DBT README
 
-### Using the starter project
+This DBT structure has a staging model and a core model. 
+The staging model creates a View from the partitioned table created from the airflow DAG.
 
-Try running the following commands:
-- dbt run
-- dbt test
+The Core model creates a fact table and several dimensional tables from the staging view.
 
+Construct a profiles.yml file in ~/.dbt/profiles.yml with the following fields:
 
-### Resources:
-- Learn more about dbt [in the docs](https://docs.getdbt.com/docs/introduction)
-- Check out [Discourse](https://discourse.getdbt.com/) for commonly asked questions and answers
-- Join the [chat](https://community.getdbt.com/) on Slack for live discussions and support
-- Find [dbt events](https://events.getdbt.com) near you
-- Check out [the blog](https://blog.getdbt.com/) for the latest news on dbt's development and best practices
+<dataset name:
+  outputs:
+    dev:
+      dataset: <dataset name>
+      fixed_retries: 1
+      keyfile: <Google credentials file location>
+      location: <google cloud region> 
+      method: service-account
+      priority: interactive
+      project: <project-id>
+      threads: 4
+      timeout_seconds: 300
+      type: bigquery
+  target: dev
+
+Run the following commands from the dbt/citibikedbt directory:
+
+1. dbt build --var 'is_test_run: false'
+
+2. dbt run --var 'is_test_run: false'
