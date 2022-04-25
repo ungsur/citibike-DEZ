@@ -15,16 +15,26 @@ Run the following commands from the airflow directory to start airflow:
 3. docker compose up
 
 After docker has brought all of the instances up, connect to the 
-[airflow webserver](http://localhost:8080)
 
-Login with login:airflow and password: airflow.
-run the three dags.
+[airflow webserver](http://localhost:8080) 
+
+```
+login:airflow
+password: airflow.
+```
+
+run the DAGs from the airflow console.
 
 Airflow has three dags:
-data_ingestion_csv_to_gcs_dag takes raw files from the citibike data url and unzips to csv files loaded onto Google Cloud Storage
 
-data_ingestion_gcs_dag extracts the csv files from the raw files and converts them to parquet files in Google Cloud Storage.
+1. data_ingestion_csv_to_gcs_dag - unzips raw files from the citibike data url to csv files loaded onto Google Cloud Storage
 
-The directory structure on GCS is '<fileformat>/<YEAR>/<filename>'(eg. pq/2019/01901-citibike-tripdata.pq)
+2. data_ingestion_gcs_dag - unzips and converts the raw files to parquet files in Google Cloud Storage.
 
-gcs_to_bq_dag loads the parquet files into Big Query into an external table partitioned by date.
+The directory structure created has the following format:
+
+```
+<fileformat>/<YEAR>/<filename>
+```
+
+3. gcs_to_bq_dag - loads the parquet files into an external table on big query partitioned by date.
