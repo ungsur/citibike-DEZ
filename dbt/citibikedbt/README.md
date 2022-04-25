@@ -6,7 +6,7 @@ The staging model creates a View from the partitioned table created from the air
 The Core model creates a fact table and several dimensional tables from the staging view.
 
 Construct a profiles.yml file in ~/.dbt/profiles.yml with the following fields:
-'''
+```
 <dataset name>:
   outputs:
     dev:
@@ -21,7 +21,7 @@ Construct a profiles.yml file in ~/.dbt/profiles.yml with the following fields:
       timeout_seconds: 300
       type: bigquery
   target: dev
-'''
+```
 Run the following commands from the dbt/citibikedbt directory:
 
 1. dbt build --var 'is_test_run: false'
