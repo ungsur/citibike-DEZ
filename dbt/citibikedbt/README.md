@@ -23,6 +23,9 @@ Construct a profiles.yml file in ~/.dbt/profiles.yml with the following fields:
   target: dev
 ```
 Run the following commands from the dbt/citibikedbt directory:
+0. ``` dbt deps ```
+
+0.1 verify dbt setup with ``` dbt debug ```
 
 1. dbt build --var 'is_test_run: false'
 
