@@ -67,6 +67,7 @@ x-airflow-common:
     GCP_GCS_BUCKET: ${GCP_GCS_BUCKET}
   volumes:
     - ./dags:/opt/airflow/dags
+    - ./data:/opt/airflow/data
     - ./logs:/opt/airflow/logs
     - ./plugins:/opt/airflow/plugins
     - ${LOCAL_GOOGLE_APPLICATION_CREDENTIALS}:/.google/credentials:ro

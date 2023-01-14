@@ -47,3 +47,15 @@ resource "google_bigquery_dataset" "dataset" {
   project    = var.project
   location   = var.region
 }
+
+resource "google_bigquery_dataset" "dataset_dev" {
+  dataset_id = var.BQ_DEV_DATASET
+  project    = var.project
+  location   = var.region
+}
+
+resource "google_bigquery_dataset" "dataset_prod" {
+  dataset_id = var.BQ_PROD_DATASET
+  project    = var.project
+  location   = var.region
+}

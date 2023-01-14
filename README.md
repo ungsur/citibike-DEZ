@@ -64,6 +64,8 @@ For your platform, install Docker Desktop and Docker Compose from the [Docker Ge
 3. [Install Terraform client](https://www.terraform.io/downloads)
 
 4. [Install DBT link](https://docs.getdbt.com/dbt-cli/install/overview)
+   [Install DBT BigQuery plugin](https://docs.getdbt.com/reference/warehouse-setups/bigquery-setup)
+    pip install dbt-bigquery
 
 
 ### After prerequisites are installed

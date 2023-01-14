@@ -8,4 +8,7 @@ airflow/logs/scheduler/latest
 .gitkeep
 *.parquet
 spark/data
-
+**/*.zip
+.vscode/*
+*.csv
+.terraform.lock.hcl

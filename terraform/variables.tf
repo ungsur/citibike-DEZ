@@ -22,3 +22,15 @@ variable "BQ_DATASET" {
   type = string
   default = "citibike_data_all"
 }
+
+variable "BQ_DEV_DATASET" {
+  description = "BigQuery Dataset that raw data (from GCS) will be written to"
+  type = string
+  default = "citibike_dev"
+}
+
+variable "BQ_PROD_DATASET" {
+  description = "BigQuery Dataset that raw data (from GCS) will be written to"
+  type = string
+  default = "citibike_prod"
+}
