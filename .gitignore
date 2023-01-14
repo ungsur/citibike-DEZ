@@ -12,3 +12,4 @@ spark/data
 .vscode/*
 *.csv
 .terraform.lock.hcl
+.DS_Store
