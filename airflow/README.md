@@ -42,7 +42,12 @@ The directory structure created has the following format:
 
 3. gcs_to_bq_dag - loads the parquet files into an external table on big query partitioned by date.
 
+After you log onto airflow in the local instance, you should have these DAGs available:
+
+![Run these DAGs](https://github.com/ungsur/citibike-DEZ/blob/main/airflow/airflowDAGs.png)
+
+After the data ingestion completes, verify that the Dags complete successfully:
 
 ![Data Ingestion Complete](https://github.com/ungsur/citibike-DEZ/blob/main/airflow/AirflowIngestionComplete.png)
 
-![alt text](https://github.com/ungsur/citibike-DEZ/blob/main/CitibikeDataset.png?raw=true)
+
