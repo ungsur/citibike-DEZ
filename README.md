@@ -28,7 +28,7 @@ The Geo chart was created with the help of this tutorial:
 [Building geomaps in datastudio](https://michaelhoweely.com/2020/05/04/how-to-build-a-custom-google-map-in-data-studio-using-google-sheets-and-geocode)
 
 
-[DataEngineering Zoomcamp completion certificate](https://github.com/ungsur/citibike-DEZ/blob/main/DataEngineeringCertificate.png?raw=true)
+![alt text](https://github.com/ungsur/citibike-DEZ/blob/main/DataEngineeringCertificate.png?raw=true "DataEngineering Zoomcamp completion certificate")
 
 
 ## Instructions to reproduce this pipeline
