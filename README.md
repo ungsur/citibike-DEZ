@@ -27,7 +27,7 @@ All charts used the tables created by DBT in Big query for the data sources.
 The Geo chart was created with the help of this tutorial:
 [Building geomaps in datastudio](https://michaelhoweely.com/2020/05/04/how-to-build-a-custom-google-map-in-data-studio-using-google-sheets-and-geocode)
 
-
+## Data Engineering Zoomcamp Certificate
 ![alt text](https://github.com/ungsur/citibike-DEZ/blob/main/DataEngineeringCertificate.png?raw=true "DataEngineering Zoomcamp completion certificate")
 
 
