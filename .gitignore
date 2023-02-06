@@ -13,3 +13,4 @@ spark/data
 *.csv
 .terraform.lock.hcl
 .DS_Store
+airflow/logs/
