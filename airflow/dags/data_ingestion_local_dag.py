@@ -2,7 +2,6 @@ import os
 import logging
 
 from airflow import DAG
-from airflow.utils.dates import days_ago
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
 from google.cloud import storage
@@ -47,7 +46,7 @@ with DAG(
     dag_id="data_ingestion_local_dag",
     default_args=default_args,
     catchup=True,
-    schedule_interval="0 6 2 * *",
+    schedule="0 6 2 * *",
     max_active_runs=4,
     tags=["citibike-31437"],
 ) as dag:

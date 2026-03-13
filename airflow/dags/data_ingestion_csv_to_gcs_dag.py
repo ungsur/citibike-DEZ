@@ -68,7 +68,7 @@ with DAG(
     dag_id="data_zip_to_gcs_dag",
     default_args=default_args,
     catchup=True,
-    schedule_interval="0 6 2 * *",
+    schedule="0 6 2 * *",
     max_active_runs=1,
     tags=["citibike-31437"],
 ) as dag:

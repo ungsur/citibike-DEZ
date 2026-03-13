@@ -1,10 +1,12 @@
 import os
+from datetime import timedelta
+import pendulum
 from airflow import DAG
-from airflow.utils.dates import days_ago
 from airflow.providers.google.cloud.operators.bigquery import (
-    BigQueryCreateExternalTableOperator,
+    BigQueryCreateTableOperator ,
     BigQueryInsertJobOperator,
 )
+
 
 PROJECT_ID = os.environ.get("GCP_PROJECT_ID")
 BUCKET = os.environ.get("GCP_GCS_BUCKET")
@@ -19,7 +21,7 @@ OUTPUT_PQ_FILENAME = "{{ execution_date.strftime('%Y%m') }}-citibike-tripdata.pa
 default_args = {
     "owner": "airflow",
     "depends_on_past": False,
-    "start_date": days_ago(1),
+    "start_date": pendulum.today('UTC').add(days=-1),
     "retries": 1,
 }
 
@@ -27,11 +29,11 @@ with DAG(
     dag_id="gcs_to_bq_ext_task",
     default_args=default_args,
     catchup=True,
-    schedule_interval="0 6 2 * *",
+    schedule="0 6 2 * *",
     max_active_runs=3,
     tags=["citibike-31437"],
 ) as dag:
-    bigquery_external_table_task = BigQueryCreateExternalTableOperator(
+    bigquery_external_table_task = BigQueryCreateTableOperator(
         task_id="bigquery_external_table_task",
         table_resource={
             "tableReference": {
