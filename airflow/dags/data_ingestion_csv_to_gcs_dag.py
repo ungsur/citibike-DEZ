@@ -2,8 +2,8 @@ import os
 import logging
 
 from airflow import DAG
-from airflow.operators.bash import BashOperator
-from airflow.operators.python import PythonOperator
+from airflow.providers.standard.operators.bash import BashOperator
+from airflow.providers.standard.operators.python import PythonOperator
 from google.cloud import storage
 
 import pyarrow.csv as pv
@@ -59,8 +59,8 @@ def upload_to_gcs(bucket, object_name, local_file):
 default_args = {
     "owner": "airflow",
     "depends_on_past": False,
-    "start_date": datetime(2017, 1, 1),
-    "end_date": datetime(2021, 1, 1),
+    "start_date": datetime(2024, 1, 1),
+    "end_date": datetime(2025, 5, 1),
     "retries": 1,
 }
 

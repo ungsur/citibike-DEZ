@@ -3,6 +3,7 @@ from datetime import timedelta
 import pendulum
 from airflow import DAG
 from airflow.providers.google.cloud.operators.bigquery import (
+    BigQueryCreateEmptyDatasetOperator,
     BigQueryCreateTableOperator ,
     BigQueryInsertJobOperator,
 )
@@ -31,10 +32,20 @@ with DAG(
     catchup=True,
     schedule="0 6 2 * *",
     max_active_runs=3,
-    tags=["citibike-31437"],
+    tags=[PROJECT_ID],
 ) as dag:
+    
+    bigquery_create_dataset_task = BigQueryCreateEmptyDatasetOperator(
+        task_id="bigquery_create_dataset_task",
+        dataset_id=BIGQUERY_DATASET,
+        project_id=PROJECT_ID,
+        location="US",
+    )
+    
     bigquery_external_table_task = BigQueryCreateTableOperator(
         task_id="bigquery_external_table_task",
+        dataset_id=BIGQUERY_DATASET,
+        table_id="citibike_external_table",
         table_resource={
             "tableReference": {
                 "projectId": PROJECT_ID,
@@ -69,4 +80,7 @@ with DAG(
         },
     )
 
-bigquery_external_table_task >> bq_create_partitioned_table_job
+bigquery_create_dataset_task 
+#
+# >> bigquery_external_table_task 
+# >> bq_create_partitioned_table_job
