@@ -1,11 +1,10 @@
 # First-time build can take upto 10 mins.
 
-FROM apache/airflow:2.2.3
-
+FROM apache/airflow:2.7.3
 ENV AIRFLOW_HOME=/opt/airflow
 
 USER root
-RUN apt-get update -qq && apt-get install vim -qqq
+RUN apt-get -qq update  && apt-get -qqq install vim gosu 
 # git gcc g++ -qqq
 
 COPY requirements.txt .
@@ -15,7 +14,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 SHELL ["/bin/bash", "-o", "pipefail", "-e", "-u", "-x", "-c"]
 
-ARG CLOUD_SDK_VERSION=322.0.0
+ARG CLOUD_SDK_VERSION=560.0.0
 ENV GCLOUD_HOME=/home/google-cloud-sdk
 
 ENV PATH="${GCLOUD_HOME}/bin/:${PATH}"
