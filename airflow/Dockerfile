@@ -1,6 +1,7 @@
 # First-time build can take upto 10 mins.
 
-FROM apache/airflow:2.7.3
+FROM apache/airflow:3.1.8
+
 ENV AIRFLOW_HOME=/opt/airflow
 
 USER root
@@ -8,8 +9,9 @@ RUN apt-get -qq update  && apt-get -qqq install vim gosu
 # git gcc g++ -qqq
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
+USER 50000
+RUN pip3 install --no-cache-dir -r requirements.txt
+USER root
 # Ref: https://airflow.apache.org/docs/docker-stack/recipes.html
 
 SHELL ["/bin/bash", "-o", "pipefail", "-e", "-u", "-x", "-c"]
