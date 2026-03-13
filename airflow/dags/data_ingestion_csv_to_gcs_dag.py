@@ -18,10 +18,10 @@ BIGQUERY_DATASET = os.environ.get("BIGQUERY_DATASET", "citibike_data_all")
 
 URL_PREFIX = "https://s3.amazonaws.com/tripdata/"
 URL_TEMPLATE = (
-    URL_PREFIX + "{{ execution_date.strftime('%Y%m') }}-citibike-tripdata.csv.zip"
+    URL_PREFIX + "{{ execution_date.strftime('%Y') }}-citibike-tripdata.zip"
 )
 OUTPUT_ZIPFILE_TEMPLATE = (
-    "{{ execution_date.strftime('%Y%m') }}-citibike-tripdata.csv.zip"
+    "{{ execution_date.strftime('%Y') }}-citibike-tripdata.zip"
 )
 OUTPUT_CSVFILE_TEMPLATE = OUTPUT_ZIPFILE_TEMPLATE.replace(".zip", "")
 OUTPUT_YEAR_TEMPLATE = "{{ execution_date.strftime('%Y') }}"
@@ -70,7 +70,7 @@ with DAG(
     catchup=True,
     schedule="0 6 2 * *",
     max_active_runs=1,
-    tags=["citibike-31437"],
+    tags=[PROJECT_ID],
 ) as dag:
     download_dataset_task = BashOperator(
         task_id="download_dataset_task",
