@@ -57,7 +57,7 @@ with DAG(
 
     local_zip_to_local_task = BashOperator(
         task_id="local_zip_to_local_task",
-        # bash_command='echo "{{ ds }}" "{{ execution_date.strftime(\'%Y%m\') }}"',
+        # bash_command='echo "{{ ds }}" "{{ logical_date.strftime(\'%Y%m\') }}"',
         bash_command=f"mkdir -p {AIRFLOW_HOME_DATA}/raw/{OUTPUT_YEAR_TEMPLATE};\
                        mkdir -p {AIRFLOW_HOME_DATA}/csv/{OUTPUT_YEAR_TEMPLATE};\
                        mkdir -p {AIRFLOW_HOME_DATA}/pq/{OUTPUT_YEAR_TEMPLATE};\

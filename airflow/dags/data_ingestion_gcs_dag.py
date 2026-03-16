@@ -17,13 +17,13 @@ BIGQUERY_DATASET = os.environ.get("BIGQUERY_DATASET", "citibike_data_all")
 
 URL_PREFIX = "https://s3.amazonaws.com/tripdata/"
 URL_TEMPLATE = (
-    URL_PREFIX + "{{ execution_date.strftime('%Y%m') }}-citibike-tripdata.csv.zip"
+    URL_PREFIX + "{{ logical_date.strftime('%Y%m') }}-citibike-tripdata.csv.zip"
 )
 OUTPUT_ZIPFILE_TEMPLATE = (
-    "{{ execution_date.strftime('%Y%m') }}-citibike-tripdata.csv.zip"
+    "{{ logical_date.strftime('%Y%m') }}-citibike-tripdata.csv.zip"
 )
 OUTPUT_CSVFILE_TEMPLATE = OUTPUT_ZIPFILE_TEMPLATE.replace(".zip", "")
-OUTPUT_YEAR_TEMPLATE = "{{ execution_date.strftime('%Y') }}"
+OUTPUT_YEAR_TEMPLATE = "{{ logical_date.strftime('%Y') }}"
 OUTPUT_PQFILE_TEMPLATE = OUTPUT_ZIPFILE_TEMPLATE.replace(".csv.zip", ".parquet")
 
 
@@ -61,8 +61,8 @@ def upload_to_gcs(bucket, object_name, local_file):
 default_args = {
     "owner": "airflow",
     "depends_on_past": False,
-    "start_date": datetime(2017, 1, 1),
-    "end_date": datetime(2021, 1, 1),
+    "start_date": datetime(2024, 1, 1),
+    "end_date": datetime(2025, 5, 1),
     "retries": 1,
 }
 
@@ -72,12 +72,12 @@ with DAG(
     catchup=True,
     schedule="0 6 2 * *",
     max_active_runs=1,
-    tags=["citibike-31437"],
+    tags=[PROJECT_ID],
 ) as dag:
 
     download_dataset_task = BashOperator(
         task_id="download_dataset_task",
-        # bash_command='echo "{{ ds }}" "{{ execution_date.strftime(\'%Y%m\') }}"',
+        # bash_command='echo "{{ ds }}" "{{ logical_date.strftime(\'%Y%m\') }}"',
         bash_command=f"curl -sSL {URL_TEMPLATE} > {AIRFLOW_HOME}/{OUTPUT_ZIPFILE_TEMPLATE}",
     )
 
@@ -124,7 +124,7 @@ with DAG(
     (
         download_dataset_task
         >> local_zip_to_gcs_task
-        >> format_to_parquet_task
-        >> local_pq_to_gcs_task
-        >> local_csv_to_gcs_task
+       # >> format_to_parquet_task
+       # >> local_pq_to_gcs_task
+       # >> local_csv_to_gcs_task
     )

@@ -17,7 +17,7 @@ DATASET = "citibike"
 PARTITION_COL = "starttime"
 CLUSTER_COL = "bikeid"
 
-OUTPUT_PQ_FILENAME = "{{ execution_date.strftime('%Y%m') }}-citibike-tripdata.parquet"
+OUTPUT_PQ_FILENAME = "{{ logical_date.strftime('%Y%m') }}-citibike-tripdata.parquet"
 
 default_args = {
     "owner": "airflow",
@@ -56,10 +56,8 @@ with DAG(
                 "autodetect": "True",
                 "sourceFormat": "PARQUET",
                 "sourceUris": [
-                    f"gs://{BUCKET}/pq/2017/*",
-                    f"gs://{BUCKET}/pq/2018/*",
-                    f"gs://{BUCKET}/pq/2019/*",
-                    f"gs://{BUCKET}/pq/2020/*",
+                    f"gs://{BUCKET}/pq/2024/*",
+                    f"gs://{BUCKET}/pq/2025/*",
                 ],
             },
         },
@@ -80,7 +78,4 @@ with DAG(
         },
     )
 
-bigquery_create_dataset_task 
-#
-# >> bigquery_external_table_task 
-# >> bq_create_partitioned_table_job
+bigquery_create_dataset_task  >> bigquery_external_table_task  >> bq_create_partitioned_table_job
