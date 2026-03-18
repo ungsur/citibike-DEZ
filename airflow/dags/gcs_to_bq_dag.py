@@ -14,8 +14,8 @@ BUCKET = os.environ.get("GCP_GCS_BUCKET")
 AIRFLOW_HOME = os.environ.get("AIRFLOW_HOME", "/opt/airflow/")
 BIGQUERY_DATASET = os.environ.get("BIGQUERY_DATASET", "citibike_data_all")
 DATASET = "citibike"
-PARTITION_COL = "starttime"
-CLUSTER_COL = "bikeid"
+PARTITION_COL = "started_at"
+CLUSTER_COL = "ride_id"
 
 OUTPUT_PQ_FILENAME = "{{ logical_date.strftime('%Y%m') }}-citibike-tripdata.parquet"
 
@@ -63,19 +63,6 @@ with DAG(
         },
     )
 
-    CREATE_BQ_TBL_QUERY = f"CREATE OR REPLACE TABLE {BIGQUERY_DATASET}.{DATASET}_table_partitioned \
-        PARTITION BY DATE({PARTITION_COL}) \
-        CLUSTER BY {CLUSTER_COL} AS \
-        SELECT * FROM {BIGQUERY_DATASET}.{DATASET}_external_table;"
-
-    bq_create_partitioned_table_job = BigQueryInsertJobOperator(
-        task_id=f"bq_create_{DATASET}_partitioned_table_task",
-        configuration={
-            "query": {
-                "query": CREATE_BQ_TBL_QUERY,
-                "useLegacySql": False,
-            }
-        },
-    )
-
-bigquery_create_dataset_task  >> bigquery_external_table_task  >> bq_create_partitioned_table_job
+(
+bigquery_create_dataset_task >> bigquery_external_table_task
+)

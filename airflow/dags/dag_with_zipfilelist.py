@@ -98,7 +98,7 @@ with DAG(
         },
     )   
     
-#   get_ziplist_task = PythonOperator(
+#   get_ziplist_task = PythonOperator()
 #      task_id='get_ziplist_task',
 #      python_callable=getziplist
 #   )   

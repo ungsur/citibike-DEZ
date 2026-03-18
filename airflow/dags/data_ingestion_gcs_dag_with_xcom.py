@@ -10,6 +10,7 @@ import pyarrow.parquet as pq
 import zipfile
 from datetime import datetime
 
+
 PROJECT_ID = os.environ.get("GCP_PROJECT_ID")
 BUCKET = os.environ.get("GCP_GCS_BUCKET")
 AIRFLOW_HOME = os.environ.get("AIRFLOW_HOME", "/opt/airflow/")
@@ -45,10 +46,10 @@ def format_to_parquet(csv_dir, pq_dir, ti):
         csv_file = f"{csv_dir}/{file}"
         pq_file = f"{pq_dir}/{pq_filename}"
         table = pv.read_csv(csv_file)
-        pq.write_table(table, pq_file)    
+        pq.write_table(table, pq_file)
 
 
-def upload_to_gcs(bucket, object_name, local_file):
+def upload_to_gcs(bucket, object_name, local_dir, filetype, ti):
     """
     Ref: https://cloud.google.com/storage/docs/uploading-objects#storage-upload-object-python
     :param bucket: GCS bucket name
@@ -61,19 +62,31 @@ def upload_to_gcs(bucket, object_name, local_file):
     storage.blob._MAX_MULTIPART_SIZE = 5 * 1024 * 1024  # 5 MB
     storage.blob._DEFAULT_CHUNKSIZE = 5 * 1024 * 1024  # 5 MB
     # End of Workaround
-
     client = storage.Client()
     bucket = client.bucket(bucket)
+    if filetype == "zip":    
+        blob = bucket.blob(object_name)
+        blob.upload_from_filename(local_dir)
 
-    blob = bucket.blob(object_name)
-    blob.upload_from_filename(local_file)
-
-
+    else:
+        zipfilelist = ti.xcom_pull(task_ids='process_zipfile_task', key='zipfilelist')
+    
+        for file in zipfilelist:
+            if filetype == "parquet":
+                file_name = file.replace(".csv", ".parquet") 
+            else:
+                file_name = file
+            blob_name = f"{object_name}/{file_name}"
+            upload_file =f"{local_dir}/{file_name}"
+            blob = bucket.blob(blob_name)
+            blob.upload_from_filename(upload_file)
+            print(f"Uploaded {upload_file} to gs://{bucket}/{blob_name}") 
+        
 default_args = {
     "owner": "airflow",
     "depends_on_past": False,
     "start_date": datetime(2024, 1, 1),
-    "end_date": datetime(2024, 5, 1),
+    "end_date": datetime(2024, 3, 1),
     "retries": 1,
 }
 
@@ -101,8 +114,8 @@ with DAG(
         },
     )   
     
-    convert_csv_to_parquet_task = PythonOperator(
-        task_id="convert_csv_to_parquet_task",
+    format_to_parquet_task = PythonOperator(
+        task_id="format_to_parquet_task",
         python_callable=format_to_parquet,
         op_kwargs={
             "csv_dir": f"{AIRFLOW_HOME_DATA}/csv/{OUTPUT_YEAR_TEMPLATE}",
@@ -116,14 +129,37 @@ with DAG(
         op_kwargs={
             "bucket": BUCKET,
             "object_name": f"raw/{OUTPUT_YEAR_TEMPLATE}/{OUTPUT_ZIPFILE_TEMPLATE}",
-            "local_file": f"{AIRFLOW_HOME}/{OUTPUT_ZIPFILE_TEMPLATE}",
+            "filetype": "zip",
+            "local_dir": f"{AIRFLOW_HOME_DATA}/raw/{OUTPUT_YEAR_TEMPLATE}/{OUTPUT_ZIPFILE_TEMPLATE}",
         },
     )
 
+    
+    local_pq_to_gcs_task = PythonOperator(
+        task_id="local_pq_to_gcs_task",
+        python_callable=upload_to_gcs,
+        op_kwargs={
+            "bucket": BUCKET,
+            "object_name": f"pq/{OUTPUT_YEAR_TEMPLATE}",
+            "filetype": "parquet",
+            "local_dir": f"{AIRFLOW_HOME_DATA}/pq/{OUTPUT_YEAR_TEMPLATE}",
+        },
+    )
+
+    local_csv_to_gcs_task = PythonOperator(
+        task_id="local_csv_to_gcs_task",
+        python_callable=upload_to_gcs,
+        op_kwargs={
+            "bucket": BUCKET,
+            "object_name": f"csv/{OUTPUT_YEAR_TEMPLATE}",
+            "filetype": "csv",
+            "local_dir": f"{AIRFLOW_HOME_DATA}/csv/{OUTPUT_YEAR_TEMPLATE}",
+        },
+    )
+    
     (
         download_dataset_task
         >> process_zipfile_task 
-        >> convert_csv_to_parquet_task
-       # >> local_zip_to_gcs_task
-       # >> format_to_parquet_task
+        >> format_to_parquet_task
+        >> [local_zip_to_gcs_task ,local_csv_to_gcs_task , local_pq_to_gcs_task]
     )
