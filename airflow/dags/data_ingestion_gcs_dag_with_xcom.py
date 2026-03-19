@@ -5,6 +5,7 @@ from airflow import DAG
 from airflow.providers.standard.operators.bash import BashOperator
 from airflow.providers.standard.operators.python import PythonOperator
 from google.cloud import storage
+import pyarrow as pa
 import pyarrow.csv as pv
 import pyarrow.parquet as pq
 import zipfile
@@ -45,7 +46,22 @@ def format_to_parquet(csv_dir, pq_dir, ti):
         pq_filename = file.replace(".csv", ".parquet")
         csv_file = f"{csv_dir}/{file}"
         pq_file = f"{pq_dir}/{pq_filename}"
-        table = pv.read_csv(csv_file)
+        convert_options = pv.ConvertOptions(
+            column_types={  "ride_id": pa.string(),
+                            "rideable_type": pa.string(),
+                            "started_at": pa.timestamp('ms'),
+                            "ended_at": pa.timestamp('ms'),
+                            "start_station_name": pa.string(),
+                            "start_station_id": pa.string(),
+                            "end_station_name": pa.string(),
+                            "end_station_id": pa.string(),
+                            "start_lat": pa.float64(),
+                            "start_lng": pa.float64(),
+                            "end_lat": pa.float64(),
+                            "end_lng": pa.float64(),
+                            "member_casual": pa.string()}
+                            )
+        table = pv.read_csv(csv_file, convert_options=convert_options)
         pq.write_table(table, pq_file)
 
 

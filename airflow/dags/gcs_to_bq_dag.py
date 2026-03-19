@@ -47,13 +47,46 @@ with DAG(
         dataset_id=BIGQUERY_DATASET,
         table_id="citibike_external_table",
         table_resource={
+            "schema": {
+            "fields": [
+                {"name": "ride_id", "type": "STRING"},
+                {"name": "rideable_type", "type": "STRING"},
+                {"name": "started_at", "type": "TIMESTAMP"},
+                {"name": "ended_at", "type": "TIMESTAMP"},
+                {"name": "start_station_name", "type": "STRING"},
+                {"name": "start_station_id", "type": "STRING"},
+                {"name": "end_station_name", "type": "STRING"},
+                {"name": "end_station_id", "type": "STRING"},
+                {"name": "start_lat", "type": "FLOAT64"},
+                {"name": "start_lng", "type": "FLOAT64"},
+                {"name": "end_lat", "type": "FLOAT64"},
+                {"name": "end_lng", "type": "FLOAT64"},
+                {"name": "member_casual", "type": "STRING"},
+                ]
+            },
             "tableReference": {
                 "projectId": PROJECT_ID,
                 "datasetId": BIGQUERY_DATASET,
                 "tableId": "citibike_external_table",
             },
             "externalDataConfiguration": {
-                "autodetect": "True",
+                "schema": {
+                "fields": [
+                    {"name": "ride_id", "type": "STRING"},
+                    {"name": "rideable_type", "type": "STRING"},
+                    {"name": "started_at", "type": "TIMESTAMP"},
+                    {"name": "ended_at", "type": "TIMESTAMP"},
+                    {"name": "start_station_name", "type": "STRING"},
+                    {"name": "start_station_id", "type": "STRING"},
+                    {"name": "end_station_name", "type": "STRING"},
+                    {"name": "end_station_id", "type": "STRING"},
+                    {"name": "start_lat", "type": "FLOAT64"},
+                    {"name": "start_lng", "type": "FLOAT64"},
+                    {"name": "end_lat", "type": "FLOAT64"},
+                    {"name": "end_lng", "type": "FLOAT64"},
+                    {"name": "member_casual", "type": "STRING"},
+                    ]
+                },
                 "sourceFormat": "PARQUET",
                 "sourceUris": [
                     f"gs://{BUCKET}/pq/2024/*",
@@ -63,6 +96,21 @@ with DAG(
         },
     )
 
+    CREATE_BQ_TBL_QUERY = f"CREATE OR REPLACE TABLE {BIGQUERY_DATASET}.{DATASET}_table_partitioned \
+        PARTITION BY DATE({PARTITION_COL}) \
+        CLUSTER BY {CLUSTER_COL} AS \
+        SELECT * FROM {BIGQUERY_DATASET}.{DATASET}_external_table;"
+
+    bq_create_partitioned_table_job = BigQueryInsertJobOperator(
+        task_id=f"bq_create_{DATASET}_partitioned_table_task",
+        configuration={
+            "query": {
+                "query": CREATE_BQ_TBL_QUERY,
+                "useLegacySql": False,
+            }
+        },
+    )
+
 (
-bigquery_create_dataset_task >> bigquery_external_table_task
+bigquery_create_dataset_task >> bigquery_external_table_task >> bq_create_partitioned_table_job
 )
