@@ -27,6 +27,6 @@ Run the following commands from the dbt/citibikedbt directory:
 
 0.1 verify dbt setup with ``` dbt debug ```
 
-1. dbt build --var 'is_test_run: false'
+1. dbt build --vars 'is_test_run: false'
 
-2. dbt run --var 'is_test_run: false'
+2. dbt run --vars 'is_test_run: false'

@@ -2,27 +2,24 @@
 
 select 
     -- identifiers
-    {{ dbt_utils.surrogate_key(['bikeid','starttime'])}} as tripid,
-    cast(bikeid as integer) as bikeid,
-    cast(start_station_id as integer) as start_station_id,
-    cast(end_station_id as integer) as end_station_id,
+    {{ dbt_utils.generate_surrogate_key(['ride_id','started_at'])}} as trip_id,
+    cast(ride_id as string) as ride_id,
+    cast(start_station_id as string) as start_station_id,
+    cast(end_station_id as string) as end_station_id,
     -- timestamps
-    cast(starttime as timestamp) as starttime,
-    cast(stoptime as timestamp) as stoptime,
+    cast(started_at as timestamp) as started_at,
+    cast(ended_at as timestamp) as ended_at,
     -- trip info
-    cast(tripduration as integer) as tripduration,
+    cast(started_at - ended_at as interval) as tripduration,
     cast(start_station_name as string) as start_station_name,
-    cast(start_station_latitude as float64) as start_station_latitude,
-    cast(start_station_longitude as float64) as start_station_longitude,
+    cast(start_lat as float64) as start_lat,
+    cast(start_lng as float64) as start_lng,
     cast(end_station_name as string) as end_station_name,
-    cast(end_station_latitude as float64) as end_station_latitude,
-    cast(end_station_longitude as float64) as end_station_longitude,
+    cast(end_lat as float64) as end_lat,
+    cast(end_lng as float64) as end_lng,
     -- user info
-    cast(usertype as string) as usertype,
-    cast(birth_year as integer) as birth_year,
-    cast(gender as integer) as gender,
-    {{ get_gender_type_description('gender') }} as gender_type_desc
-
+    cast(member_casual as string) as member_casual,
+    cast(rideable_type as string) as rideable_type
 from {{ source('staging', 'citibike_table_partitioned') }}
 
 -- dbt build --m <model.sql> --var 'is_test_run: false'
@@ -31,7 +28,3 @@ from {{ source('staging', 'citibike_table_partitioned') }}
   limit 100
 
 {% endif %}
-
-
- 
-   

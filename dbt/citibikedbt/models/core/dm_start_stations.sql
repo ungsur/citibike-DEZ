@@ -2,17 +2,15 @@
 
 
 with trips_data as (
-    select tripid,
-    start_station_id, start_station_name, start_station_latitude,
-    start_station_longitude
+    select ride_id,
+    start_station_id, start_station_name, start_lat, start_lng,
      from {{ ref('fact_trips') }}
 )
 
 select 
-count(tripid) as total_trips_from_station,
-start_station_name,start_station_latitude,
-    start_station_longitude
-
+count(ride_id) as total_trips_from_station,
+start_station_name,start_lat,
+    start_lng
 from trips_data
-group by start_station_name,start_station_latitude,
-    start_station_longitude
+group by start_station_name,start_lat,
+    start_lng

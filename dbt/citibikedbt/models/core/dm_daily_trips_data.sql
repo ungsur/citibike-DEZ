@@ -6,9 +6,9 @@ with trips_data as (
 )
 
 select 
-format_datetime('%A', starttime) as day_of_week,
+format_datetime('%A', started_at) as day_of_week,
 avg(tripduration) as trip_duration_avg_by_day,
-count(tripid) as total_daily_trips,
+count(ride_id) as total_daily_trips,
 
 from trips_data
 group by day_of_week
