@@ -9,7 +9,7 @@ import pyarrow as pa
 import pyarrow.csv as pv
 import pyarrow.parquet as pq
 import zipfile
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 PROJECT_ID = os.environ.get("GCP_PROJECT_ID")
@@ -101,8 +101,8 @@ def upload_to_gcs(bucket, object_name, local_dir, filetype, ti):
 default_args = {
     "owner": "airflow",
     "depends_on_past": False,
-    "start_date": datetime(2024, 1, 1),
-    "end_date": datetime(2024, 3, 1),
+    "start_date": datetime(2025,1,1,tzinfo=timezone.utc),
+    "end_date": datetime(2026, 2, 1,tzinfo=timezone.utc),
     "retries": 1,
 }
 
@@ -111,14 +111,15 @@ with DAG(
     default_args=default_args,
     catchup=True,
     schedule="0 6 2 * *",
-    max_active_runs=1,
+    max_active_runs=9,
+    max_active_tasks=9,
     tags=[PROJECT_ID],
 ) as dag:
 
     download_dataset_task = BashOperator(
         task_id="download_dataset_task",
         # bash_command='echo "{{ ds }}" "{{ logical_date.strftime(\'%Y%m\') }}"',
-        bash_command=f"curl -sSL {URL_TEMPLATE} > {AIRFLOW_HOME}/{OUTPUT_ZIPFILE_TEMPLATE}",
+        bash_command=f"curl -sSL {URL_TEMPLATE} > {AIRFLOW_HOME_DATA}/raw/{OUTPUT_YEAR_TEMPLATE}/{OUTPUT_ZIPFILE_TEMPLATE}",
     )
 
     process_zipfile_task = PythonOperator(

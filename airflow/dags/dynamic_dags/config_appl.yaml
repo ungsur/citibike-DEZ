@@ -1,0 +1,5 @@
+dag_id: 'APPL'
+schedule: '@daily'
+catchup: False
+input: 126
+

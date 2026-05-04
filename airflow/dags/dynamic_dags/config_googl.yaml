@@ -1,0 +1,4 @@
+dag_id: 'GOOGL'
+schedule: '@daily'
+catchup: False
+input: 126

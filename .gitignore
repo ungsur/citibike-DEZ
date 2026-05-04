@@ -18,7 +18,8 @@ airflow/logs/
 __pycache__/
 *.py[cod]
 *$py.class
-
+logs/
+dbt/logs
 # C extensions
 *.so
 

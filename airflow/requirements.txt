@@ -1,4 +1,6 @@
 apache-airflow-providers-google
 apache-airflow-providers-standard
+apache-airflow-providers-common-compat
+apache-airflow-providers-http
 pyarrow
 pendulum

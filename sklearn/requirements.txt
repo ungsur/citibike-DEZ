@@ -1,5 +1,5 @@
-pip install db-dtypes
-pip install google-cloud-storage
-pip install google-cloud-bigquery
-pip install pingouin
-pip install yellowbrick
+db-dtypes
+google-cloud-storage
+google-cloud-bigquery
+pingouin
+yellowbrick
